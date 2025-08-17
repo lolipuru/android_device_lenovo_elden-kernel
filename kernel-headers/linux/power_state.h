@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
 /*
- * Copyright (c) 2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2023, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #ifndef LINUX_POWERSTATE_H
 #define LINUX_POWERSTATE_H
@@ -31,6 +30,12 @@ enum ps_event_type {
 	CDSP_BEFORE_POWERDOWN,
 	CDSP_AFTER_POWERUP,
 	PREPARE_FOR_HIBERNATION,
+	CDSP1_BEFORE_POWERDOWN,
+	CDSP1_AFTER_POWERUP,
+	GPDSP0_BEFORE_POWERDOWN,
+	GPDSP0_AFTER_POWERUP,
+	GPDSP1_BEFORE_POWERDOWN,
+	GPDSP1_AFTER_POWERUP,
 };
 
 enum subsys_transition {

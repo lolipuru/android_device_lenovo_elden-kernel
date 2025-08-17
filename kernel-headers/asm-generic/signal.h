@@ -71,7 +71,7 @@ typedef unsigned long old_sigset_t;
 #define __ARCH_HAS_SA_RESTORER
 #endif
 
-struct sigaction {
+struct __kernel_sigaction {
 	__sighandler_t sa_handler;
 	unsigned long sa_flags;
 #ifdef SA_RESTORER
@@ -83,7 +83,7 @@ struct sigaction {
 typedef struct sigaltstack {
 	void *ss_sp;
 	int ss_flags;
-	size_t ss_size;
+	__kernel_size_t ss_size;
 } stack_t;
 
 #endif /* __ASSEMBLY__ */

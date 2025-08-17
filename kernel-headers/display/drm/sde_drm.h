@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
 /*
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
  */
 
@@ -72,6 +72,22 @@ extern "C" {
  *					base-format specific.
  */
 #define DRM_FORMAT_MOD_QCOM_ALPHA_SWAP	fourcc_mod_code(QCOM, 0x10)
+
+#define DRM_FORMAT_MOD_QCOM_CAC_R          fourcc_mod_code(QCOM, 0x40)
+#define DRM_FORMAT_MOD_QCOM_CAC_G          fourcc_mod_code(QCOM, 0x80)
+#define DRM_FORMAT_MOD_QCOM_CAC_B          fourcc_mod_code(QCOM, 0x100)
+
+/**
+ * @DRM_FORMAT_MOD_QCOM_LOSSY_8_5:	Refers to RGBA888 UBWC pixel format with 1.26x
+ *					compression ratio.
+ */
+#define DRM_FORMAT_MOD_QCOM_LOSSY_8_5	fourcc_mod_code(QCOM, 0x20)
+
+/**
+ * @DRM_FORMAT_MOD_QCOM_LOSSY_2_1:	Refers to RGBA8888 UBWC pixel format with 2x
+ *					compression ratio.
+ */
+#define DRM_FORMAT_MOD_QCOM_LOSSY_2_1	fourcc_mod_code(QCOM, 0x200)
 
 /**
  * Blend operations for "blend_op" property
@@ -255,6 +271,68 @@ struct sde_drm_de_v1 {
 	__s16 adjust_c[SDE_MAX_DE_CURVES];
 };
 
+/**
+ * struct sde_drm_cac :    QSEEDv3 CAC configuration
+ * @cac_mode:              CAC mode for current configuration
+ * @cac_le_phase_init2_x:  LE horizontal initial phase2
+ * @cac_le_phase_init2_y:  LE vertical initial phase2
+ * @cac_re_phase_init2_y:  RE vertical initial phase2
+ * @cac_re_phase_init_y:   RE vertical initial phase
+ * @cac_le_thr_x:          LE horizontal threshold
+ * @cac_le_thr_y:          LE vertical threshold
+ * @cac_re_thr_y:          RE vertical threshold
+ * @cac_re_preload_y:      RE preload value
+ * @cac_dst_uv_w:          uv destination width
+ * @cac_dst_uv_h:          uv destination height
+ * @cac_le_dst_h_offset:   LE destination horizontal offset
+ * @cac_le_dst_v_offset:   LE destination vertical offset
+ * @cac_re_dst_v_offset:   RE destination vertical offset
+ * @cac_phase_inc_first_x: horizontal inc_first control
+ * @cac_phase_inc_first_y: vertical inc_first control
+ * @cac_le_inc_skip_x:     LE horizontal inc_skip control
+ * @cac_le_inc_skip_y:     LE vertical inc_skip control
+ * @cac_re_inc_skip_x:     RE horizontal inc_skip control
+ * @cac_re_inc_skip_y:     RE vertical inc_skip control
+ * @fov_mode:              Fovea mode for current configuration
+ * @cac_asym_phase_step_h: Horizontal phase step for fov mode after center region
+ * @cac_asym_phase_step_v: Vertical phase step for fov mode after center region
+ * @cac_re_phase_step_v:   Right eye vertical phase step for fov mode in beginning region
+ * @cac_re_asym_phase_step_v: Right eye vertical phase step for fov mode in ending region
+ */
+struct sde_drm_cac {
+	__u32 cac_mode;
+
+	__u32 cac_le_phase_init2_x[SDE_MAX_PLANES];
+	__u32 cac_le_phase_init2_y[SDE_MAX_PLANES];
+	__u32 cac_re_phase_init2_y[SDE_MAX_PLANES];
+	__u32 cac_re_phase_init_y[SDE_MAX_PLANES];
+
+	__u32 cac_le_thr_x[SDE_MAX_PLANES];
+	__u32 cac_le_thr_y[SDE_MAX_PLANES];
+
+	__u32 cac_re_thr_y[SDE_MAX_PLANES];
+	__u32 cac_re_preload_y[SDE_MAX_PLANES];
+
+	__u32 cac_dst_uv_w;
+	__u32 cac_dst_uv_h;
+	__u32 cac_le_dst_h_offset;
+	__u32 cac_le_dst_v_offset;
+	__u32 cac_re_dst_v_offset;
+
+	__u16 cac_phase_inc_first_x[SDE_MAX_PLANES];
+	__u16 cac_phase_inc_first_y[SDE_MAX_PLANES];
+	__u16 cac_le_inc_skip_x[SDE_MAX_PLANES];
+	__u16 cac_le_inc_skip_y[SDE_MAX_PLANES];
+	__u16 cac_re_inc_skip_x[SDE_MAX_PLANES];
+	__u16 cac_re_inc_skip_y[SDE_MAX_PLANES];
+
+	__u32 fov_mode;
+	__u32 cac_asym_phase_step_h;
+	__u32 cac_asym_phase_step_v;
+	__u32 cac_re_phase_step_v;
+	__u32 cac_re_asym_phase_step_v;
+};
+
 /*
  * Scaler configuration flags
  */
@@ -312,6 +390,7 @@ struct sde_drm_de_v1 {
  * @de_lpf_m:          Detail enhancer lpf blend medium
  * @dir45_en:          45/-45 degree direction filtering enable
  * @cor_en:            corner enhancer enable
+ * @cac_cfg:           CAC QSEED config
  */
 struct sde_drm_scaler_v2 {
 	/*
@@ -384,6 +463,8 @@ struct sde_drm_scaler_v2 {
 	__u32 de_lpf_m;
 	__u32 dir45_en;
 	__u32 cor_en;
+
+	struct sde_drm_cac cac_cfg;
 };
 
 /* Number of dest scalers supported */
@@ -397,6 +478,13 @@ struct sde_drm_scaler_v2 {
 #define SDE_DRM_DESTSCALER_ENHANCER_UPDATE  0x4
 #define SDE_DRM_DESTSCALER_PU_ENABLE        0x8
 
+/*
+ * Possible merge_mode values for each Destination Scaler block
+ */
+#define DEST_SCALER_SINGLE_PIPE   1
+#define DEST_SCALER_DUAL_PIPE     2
+#define DEST_SCALER_QUAD_PIPE     3
+
 /**
  * struct sde_drm_dest_scaler_cfg - destination scaler config structure
  * @flags:      Flag to switch between mode for destination scaler
@@ -406,6 +494,7 @@ struct sde_drm_scaler_v2 {
  * @lm_height:  Layer mixer height configuration
  * @scaler_cfg: The scaling parameters for all the mode except disable
  *              Userspace pointer to struct sde_drm_scaler_v2
+ * @merge_mode: Specify pipe merge mode for each DS block
  */
 struct sde_drm_dest_scaler_cfg {
 	__u32 flags;
@@ -413,6 +502,7 @@ struct sde_drm_dest_scaler_cfg {
 	__u32 lm_width;
 	__u32 lm_height;
 	__u64 scaler_cfg;
+	__u32 merge_mode;
 };
 
 /**
@@ -794,6 +884,20 @@ struct drm_msm_display_hint {
 	__u32 hint_flags;
 };
 
+/**
+ * struct drm_msm_display_early_ept: Payload for display early ept hint
+ * @ept:  Expected present time value in nano seconds.
+ * @frame_interval: Frame interval in nano seconds of vrr.
+ * @connector_id: connector id.
+ * @flags:  operation control flags, for future use
+ */
+struct drm_msm_display_early_ept {
+	__u64 ept_ns;
+	__u64 frame_interval;
+	__u32 connector_id;
+	__u32 flags;
+};
+
 #define DRM_NOISE_LAYER_CFG
 #define DRM_NOISE_TEMPORAL_FLAG (1 << 0)
 #define DRM_NOISE_ATTN_MAX 255
@@ -804,9 +908,11 @@ struct drm_msm_display_hint {
  * @flags: operation control flags, for future use
  * @zposn: noise zorder
  * @zposattn: attenuation zorder
- * @attn_factor: attenuation factor in range of 1 to 255
+ * @attn_factor: attenuation factor in range of 1 to 255 for 8 bit and
+ *               1 to 65535 for 10 bit alpha
  * @stength: strength in range of 0 to 6
- * @alpha_noise: attenuation in range of 1 to 255
+ * @alpha_noise: attenuation in range of 1 to 255 for 8 bit and
+ *               1 to 65535 for 10 bit alpha
 */
 struct drm_msm_noise_layer_cfg {
 	__u64 flags;
@@ -912,6 +1018,7 @@ struct sde_drm_dnsc_blur_cfg {
 #define DRM_MSM_RMFB2                  0x43
 #define DRM_MSM_POWER_CTRL             0x44
 #define DRM_MSM_DISPLAY_HINT           0x45
+#define DRM_MSM_EARLY_EPT              0x46
 
 /* sde custom events */
 #define DRM_EVENT_HISTOGRAM 0x80000000
@@ -931,6 +1038,10 @@ struct sde_drm_dnsc_blur_cfg {
 #define DRM_EVENT_VM_RELEASE 0X8000000E
 #define DRM_EVENT_OPR_VALUE 0X8000000F
 #define DRM_EVENT_MISR_SIGN 0X80000010
+#define DRM_EVENT_FRAME_DONE 0X8000011
+#define DRM_EVENT_MDNIE_ART 0X80000012
+#define DRM_EVENT_COPR 0X80000013
+#define DRM_EVENT_VM_RECLAIM 0X80000014
 
 #ifndef DRM_MODE_FLAG_VID_MODE_PANEL
 #define DRM_MODE_FLAG_VID_MODE_PANEL        0x01
@@ -966,6 +1077,8 @@ struct sde_drm_dnsc_blur_cfg {
 			DRM_MSM_POWER_CTRL), struct drm_msm_power_ctrl)
 #define DRM_IOCTL_MSM_DISPLAY_HINT DRM_IOW((DRM_COMMAND_BASE + \
 			DRM_MSM_DISPLAY_HINT), struct drm_msm_display_hint)
+#define DRM_IOCTL_MSM_EARLY_EPT DRM_IOW((DRM_COMMAND_BASE + \
+			DRM_MSM_EARLY_EPT), struct drm_msm_display_early_ept)
 
 #if defined(__cplusplus)
 }
